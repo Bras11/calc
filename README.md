@@ -1,1 +1,1 @@
-# calc
+Simple CLI calc
