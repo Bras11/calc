@@ -4,11 +4,11 @@
 	Helpful comments removed.
 
 	We have inserted 3 bugs that the compiler will catch and 3 that it won't.
-	
+
 	Грамматика:
-	
+
 Инструкция:
-	statement 
+	statement
 	Печать
 	Выход
 
@@ -20,7 +20,7 @@
 statement:
 	declaration
 	expression
-		
+
 
 
 expression:
@@ -37,7 +37,7 @@ primary:
 	+primary
 	number
 	name
-	
+
 */
 
 #include "std_lib_facilities.h"
@@ -108,9 +108,9 @@ Token Token_stream::get()
 			s += ch;
 			while(cin.get(ch) && (isalpha(ch) || isdigit(ch) || ch == '_')) s+=ch;
 			cin.unget();
-			if (s == "let") return Token(let);	
+			if (s == "let") return Token(let);
 			if (s == "exit") return Token(quit);
-			if (s == "const") return Token(const_user);	
+			if (s == "const") return Token(const_user);
 			return Token(name,s);
 		}
 		error("Bad token");
@@ -136,10 +136,12 @@ struct Variable {
 	char let_const;
 	Variable(string n, double v, char c) :name(n), value(v), let_const(c) { }
 };
-vector<Variable> names;
+//vector<Variable> names;
 
 class Symbol_table {
+
 public:
+    vector<Variable> var_table;
 	void set(string s, double d);
 	double get(string s);
 	bool is_declared(string s);
@@ -149,23 +151,23 @@ public:
 Symbol_table stab;
 
 
-//vector<Variable> names;	
+//vector<Variable> names;
 
 //double get_value(string s)
 double Symbol_table::get(string s)
 {
-	for (int i = 0; i<names.size(); ++i)
-		if (names[i].name == s) return names[i].value;
+	for (int i = 0; i<stab.var_table.size(); ++i)
+		if (stab.var_table[i].name == s) return stab.var_table[i].value;
 	error("get: undefined name ",s);
 }
 
 //void set_value(string s, double d)
 void Symbol_table::set(string s, double d)
 {
-	for (int i = 0; i<=names.size(); ++i) {
-		if (names[i].name == s && names[i].let_const == const_user) error("Нельзя изменять именнованные константы!");
-		if (names[i].name == s) {
-			names[i].value = d;
+	for (int i = 0; i<=stab.var_table.size(); ++i) {
+		if (stab.var_table[i].name == s && stab.var_table[i].let_const == const_user) error("Нельзя изменять именнованные константы!");
+		if (stab.var_table[i].name == s) {
+			stab.var_table[i].value = d;
 			return;
 		}
 	}
@@ -175,8 +177,8 @@ void Symbol_table::set(string s, double d)
 //bool is_declared(string s)
 bool Symbol_table::is_declared(string s)
 {
-	for (int i = 0; i<names.size(); ++i)
-		if (names[i].name == s) return true;
+	for (int i = 0; i<stab.var_table.size(); ++i)
+		if (stab.var_table[i].name == s) return true;
 	return false;
 }
 
@@ -185,7 +187,7 @@ double Symbol_table::define(string var, double val, char c)
 // добавляем пару (var,val) в вектор names
 {
 	if (is_declared(var)) error(var," declared twice");
-	names.push_back(Variable(var,val,c));
+	stab.var_table.push_back(Variable(var,val,c));
 	return val;
 }
 
@@ -203,7 +205,7 @@ double primary()
 	Token t = ts.get();
 	switch (t.kind) {
 	case '(':
-	{	
+	{
 		double d = expression();
 		t = ts.get();
 		if (t.kind == ',') ts.unget(t);
@@ -286,7 +288,7 @@ double declaration(char c)
 	Token t2 = ts.get();
 	if (t2.kind != '=') error("= missing in declaration of " ,name);
 	double d = expression();
-	names.push_back(Variable(name,d,c));
+	stab.var_table.push_back(Variable(name,d,c));
 	return d;
 }
 
@@ -333,7 +335,7 @@ void calculate()
 int main()
 
 	try {
-		system ("chcp 1251"); 
+		system ("chcp 1251");
 		stab.define("pi",3.14, const_user);
 		calculate();
 		return 0;
